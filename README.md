@@ -40,7 +40,7 @@ The setup page defaults to English for new settings; existing device language se
 
 ### Read the onboard sensors
 
-Press **B** to open the menu, use **B** to select **Sensors**, then press **A**. You can also ask Muse:
+Hold **A** and ask Muse about the onboard sensors, then release **A** to send your question. For example:
 
 > Read the temperature and humidity from my K10.
 >
