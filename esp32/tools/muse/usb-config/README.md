@@ -43,7 +43,7 @@ The shared Wi-Fi/NVS keeper still performs its normal work. Network and TTS rema
 
 ## Public build
 
-With ESP-IDF 6.0.1, run `tools/muse/k10-public.ps1 -Action package`. The isolated directory is `build-muse-k10-public`, with `devices/sdkconfig.muse-k10-public` loaded last. Packaging includes only required flash images, the UI and license notices. It excludes sdkconfig, NVS, development logs and personal service settings, and rejects complete credential patterns. Output: `build-muse-k10-public/release`.
+With ESP-IDF 6.0.1, run `tools/muse/k10-public.ps1 -Action package`. The isolated directory is `build-muse-k10-public`, with `devices/sdkconfig.muse-k10-public` loaded last. Packaging includes only the four required flash images, the standalone configuration HTML, usage instructions, checksums and license notices. Multi-file page sources and operating-system-specific flash helpers are not included in the user download. It excludes sdkconfig, NVS, development logs and personal service settings, and rejects complete credential patterns. Output: `build-muse-k10-public/release`.
 
 ## Optional Cartesia PCM TTS
 

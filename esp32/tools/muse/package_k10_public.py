@@ -40,14 +40,13 @@ def package(build: Path):
     with tempfile.TemporaryDirectory(prefix="k10-public-", dir=build) as temporary:
         stage = Path(temporary)
         (stage / "firmware").mkdir()
-        manifest = {"board": "UNIHIKER K10", "chip": "esp32s3", "flash_size": "16MB", "files": []}
-        for offset, relative in args["flash_files"].items():
+        for relative in args["flash_files"].values():
             target = stage / "firmware" / Path(relative).name
             shutil.copyfile(build / relative, target)
-            manifest["files"].append({"offset": offset, "file": f"firmware/{target.name}"})
-        shutil.copytree(ROOT / "tools/muse/usb-config", stage / "usb-config")
+        (stage / "usb-config").mkdir()
+        shutil.copyfile(ROOT / "tools/muse/usb-config/k10-usb-config.html",
+                        stage / "usb-config/k10-usb-config.html")
         shutil.copyfile(ROOT / "tools/muse/K10_PUBLIC_RELEASE.md", stage / "README.md")
-        shutil.copyfile(ROOT / "tools/muse/flash_k10_public.ps1", stage / "flash.ps1")
         (stage / "licenses").mkdir()
         shutil.copyfile(ROOT.parent / "LICENSE", stage / "licenses/Muse-SDK-LICENSE")
         # Preserve bundled component copyright/license notices with their names.
@@ -63,7 +62,17 @@ def package(build: Path):
                     target = stage / "licenses" / source.parent.name / relative
                     target.parent.mkdir(parents=True, exist_ok=True)
                     shutil.copyfile(path, target)
-        (stage / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+        (stage / "licenses/README.md").write_text(
+            "# License notices\n\n"
+            "These files document the licenses and copyright notices of the SDKs and third-party dependencies. "
+            "They are not flashed to K10 and do not allocate device memory.\n\n"
+            "- Muse-SDK-LICENSE: the Apache License 2.0 text supplied with the Muse Gadgets SDK.\n"
+            "- ESP-IDF-LICENSE: the Apache License 2.0 text supplied with ESP-IDF, when its source path is available.\n"
+            "- Other folders: component and bundled dependency licenses, copyright notices and attribution. "
+            "Their own terms apply; they are not all Apache-2.0.\n\n"
+            "Notices are collected conservatively from the SDK/component source trees. "
+            "Their inclusion does not mean that every component or example is used by this K10 image. "
+            "Keep applicable notices when redistributing firmware.\n", encoding="utf-8")
         checksums = []
         for path in sorted(stage.rglob("*")):
             if not path.is_file(): continue
@@ -88,6 +97,13 @@ def package(build: Path):
                     shutil.rmtree(target)
                 shutil.copytree(path, target)
             else: shutil.copyfile(path, target)
+        # Retire only these known obsolete artifacts from the resolved release
+        # directory; leave unrelated downloads and release notes untouched.
+        for name in ("flash.ps1", "manifest.json"):
+            obsolete = release / name
+            if obsolete.is_symlink() or (obsolete.exists() and not obsolete.is_file()):
+                raise ValueError("unsafe obsolete release artifact")
+            if obsolete.exists(): obsolete.unlink()
     print(f"Public package and credential audit complete: {release}")
 
 

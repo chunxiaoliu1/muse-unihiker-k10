@@ -27,10 +27,20 @@ class PublicPackageTest(unittest.TestCase):
     def test_archive_only_contains_allowlisted_public_files(self):
         (self.build / 'nvs.bin').write_bytes(b'private NVS not to be collected')
         (self.build / 'private.log').write_text('not to be collected')
+        (self.build / 'release').mkdir()
+        for name in ('flash.ps1', 'manifest.json'):
+            (self.build / 'release' / name).write_text('obsolete package artifact')
         package.package(self.build)
+        for name in ('flash.ps1', 'manifest.json'):
+            self.assertFalse((self.build / 'release' / name).exists())
         with zipfile.ZipFile(self.build / 'release/unihiker-k10-muse-public.zip') as archive:
             names = archive.namelist()
-            self.assertIn('usb-config/index.html', names)
+            self.assertIn('usb-config/k10-usb-config.html', names)
+            self.assertEqual([name for name in names if name.startswith('usb-config/')],
+                             ['usb-config/k10-usb-config.html'])
+            self.assertNotIn('flash.ps1', names)
+            self.assertNotIn('manifest.json', names)
+            self.assertIn('licenses/README.md', names)
             self.assertIn('SHA256SUMS.txt', names)
             self.assertNotIn('sdkconfig', names)
             self.assertNotIn('nvs.bin', names)
