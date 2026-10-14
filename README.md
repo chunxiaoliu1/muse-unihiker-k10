@@ -126,7 +126,7 @@ Normal startup with a configured token creates no dedicated USB configuration ta
 ## What you need
 
 - **[DFRobot UNIHIKER K10](https://www.dfrobot.com/product-2904.html)**: ESP32-S3, 16 MB flash, 8 MB PSRAM.
-- A USB data cable and a computer running **Chrome or Edge**.
+- A USB data cable (**included with K10**) and a computer running **Chrome or Edge**.
 - The Muse phone app with **Developer mode** available.
 - Your own **Muse Gadgets SDK Token**, from Account -> SDK tokens at [gadgets.muse.ai](https://gadgets.muse.ai).
 - Optional: a personal **Cartesia API Key** for spoken replies.
