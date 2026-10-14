@@ -1,35 +1,148 @@
 # Muse for UNIHIKER K10
 
-Connect DFRobot UNIHIKER K10 to Muse with voice input, animated replies, sensors, on-demand photos and optional streaming speech.
+**Talk to Muse, see and hear its replies, ask about your surroundings, and let K10 report sensor events.**
 
-This community project extends [Meta's Muse Gadgets SDK](https://github.com/facebookincubator/muse-gadget-sdk) for K10. It is not an official DFRobot or Meta firmware release. Original SDK documentation is preserved in [README_UPSTREAM.md](README_UPSTREAM.md).
+This firmware turns DFRobot UNIHIKER K10 into a Muse-connected device using its screen, microphone, speaker, camera, sensors and RGB LEDs. It is a community extension of [Meta's Muse Gadgets SDK](https://github.com/facebookincubator/muse-gadget-sdk).
 
-## What K10 can do
+## Features at a glance
 
-- Pair with the Muse app and connect to Wi-Fi.
-- Hold A to speak; see replies on the display with an animated avatar and RGB status lights.
-- Read temperature, humidity, ambient light and three-axis acceleration through Muse's `sensors.read` command.
-- Proactively report humidity above 70% RH, repeat every 15 minutes while high, and rearm at 65% RH or below.
-- Capture a photo when Muse requests `camera.capture`, for questions such as "What am I looking at?"
-- Read replies aloud using optional Cartesia PCM streaming, directly from K10. No computer-side speech service is needed.
-- Configure your own SDK Token and optional Cartesia key using one standalone HTML file over USB.
+| Feature | What you can do | What you need |
+|---|---|---|
+| Voice conversation | Hold A to speak, release to send, and read Muse's reply on K10 | Muse pairing and internet access |
+| Animated screen | See an animated avatar, reply text and connection status; multilingual text, including Chinese, is supported | Included |
+| Spoken replies | Have K10 read replies aloud using streamed audio from Cartesia | Optional personal Cartesia API Key |
+| Sensor readings | Check temperature, humidity, ambient light and three-axis acceleration on K10 or ask Muse for them | Included; Muse queries need a connection |
+| Humidity reminders | Send a message to Muse when humidity exceeds 70% RH; repeat every 15 minutes while it stays high | K10 online and connected to Muse |
+| Camera questions | Point K10 at an object and ask Muse what it is; Muse requests a photo when needed | Muse pairing and internet access |
+| USB setup | Set your own SDK Token, Cartesia key, voice and language from a single HTML file | USB data cable and desktop Chrome/Edge |
+| Device controls | Use the A/B button menu for sensors, volume, speaker, microphone gain, connection settings and USB mode | Included |
+| RGB status lights | See whether K10 is setting up, connecting, online, recording, thinking or taking a photo | Included |
 
-The UI, project guides, diagnostics and built-in test passages are in English. Multilingual replies and CJK display support remain available.
+Voice replies are optional. Without a Cartesia key, voice input and on-screen Muse replies still work.
 
-## Hardware and setup
+## How the features work
 
-Requires UNIHIKER K10 with ESP32-S3, 16 MB flash and 8 MB PSRAM, a USB data cable, desktop Chrome/Edge, and the Muse app with Developer mode. Each user supplies their own SDK Token from [Muse Gadgets](https://gadgets.muse.ai). Voice replies additionally require a personal [Cartesia API Key](https://play.cartesia.ai/keys).
+### Talk to Muse
 
-1. Download the public firmware package from this repository's Releases.
-2. Follow the [flash and setup guide](esp32/tools/muse/K10_PUBLIC_RELEASE.md). Flashing uses four images at their specified addresses; the application BIN alone is not a complete image for address 0x0.
-3. Open the included `usb-config/k10-usb-config.html` in Chrome or Edge.
-4. With no token configured, K10 keeps its animated avatar and displays `USB` / `Set SDK Token first.`. Already configured devices must enter **USB mode** from the menu before connecting.
-5. Enter the SDK Token and optional voice settings, then choose **Save all settings**. K10 restarts after every entered setting is confirmed saved.
-6. Enable Developer mode in the Muse app, add K10, and set up Wi-Fi. Remove an old app device entry before pairing again after a full local reset.
+Hold **A** while speaking, then release it. K10 sends your recording to Muse and displays the reply on its screen. For example:
 
-Blank credentials preserve existing settings. Changing a stored voice or language requires entering the Cartesia key again. USB mode stays active until restart; physical buttons are ignored while configuring, but background networking and voice services continue. Normal startup with a token allocates no dedicated USB configuration task, queue or driver buffers.
+> Tell me a short story.
+>
+> Help me plan my day.
 
-No SDK Token, Cartesia key, Wi-Fi password or device NVS is included. The configuration page does not upload or read back credentials. Enabling speech sends reply text to Cartesia and consumes the user's credits.
+The interface and setup guides are in English. Muse replies can still use other languages, and CJK text rendering is retained.
+
+### Hear replies aloud
+
+Enter your own [Cartesia API Key](https://play.cartesia.ai/keys), choose a Voice ID and reply language, and save the settings. K10 receives and plays a continuous PCM audio stream directly from Cartesia. No computer-side speech service is required.
+
+The setup page defaults to English for new settings; existing device language settings are preserved. Use **Test voice** after saving, restarting and reconnecting to check playback. Voice synthesis sends reply text to Cartesia and consumes your service credits. Network or service failures leave the text reply available.
+
+### Read the onboard sensors
+
+Press **B** to open the menu, use **B** to select **Sensors**, then press **A**. You can also ask Muse:
+
+> Read the temperature and humidity from my K10.
+>
+> How bright is it around my K10?
+>
+> Read my K10's acceleration values.
+
+| Sensor | Available readings | Notes |
+|---|---|---|
+| AHT20 | Temperature in degrees Celsius; relative humidity in % RH | Temperature can be affected by board heat |
+| LTR303 | Ambient light in estimated lux | Useful for checking changes in lighting |
+| SC7A20H | Three-axis X/Y/Z acceleration | Signed raw 12-bit values, not calibrated g |
+
+The screen shows locally sampled readings. Muse requests the same cached data through `sensors.read`; readings include units and sample age. Missing, invalid or older-than-10-second readings are not reported as valid measurements. Ordinary sensor readings are queried on demand rather than continuously sent to Muse.
+
+### Receive high-humidity reminders
+
+K10 monitors humidity automatically:
+
+- **Above 70% RH:** send a message to Muse stating that ambient humidity is too high and include the measured value.
+- **Still above 70% RH:** remind again 15 minutes after the last successfully delivered reminder.
+- **At or below 65% RH:** rearm, so the next rise above 70% can trigger a new initial reminder.
+
+These are messages in Muse's chat, not a local audible alarm. After reconnecting, K10 checks the current reading rather than replaying old offline alarms. Thresholds, repeat intervals and additional sensor rules can be changed in the [sensor module](esp32/components/muse/sensors/README.md).
+
+### Ask Muse to look at an object
+
+Point the camera at an object, hold **A**, and say:
+
+> Look at this object and tell me what it is.
+
+The flow is:
+
+1. K10 sends your voice request to Muse.
+2. Muse decides whether to request an image and invokes `camera.capture` when needed.
+3. K10 takes a photo and returns a JPEG.
+4. Muse analyzes the image and sends its answer back to K10.
+
+Keep the camera pointed at the object until capture finishes. Photos are taken on demand; there is no continuous video stream. The current camera output is 640 x 480. Bright windows can cause overexposure or color casts, so use normal indoor lighting where possible.
+
+### Configure everything over USB
+
+Open the standalone **`k10-usb-config.html`** in desktop Chrome or Edge. It lets you:
+
+- Set or replace your Muse Gadgets SDK Token.
+- Set your optional Cartesia key, voice and language.
+- Save all entered settings with one button and restart automatically after every save is confirmed.
+- Test saved voice settings and refresh device status.
+- Clear only the SDK Token, disable voice replies, or clear all user settings before switching accounts or transferring the device.
+
+Blank credential fields preserve existing settings. To change a stored voice or language, enter the Cartesia key again. If a later save fails, the page identifies confirmed saves and does not request a restart.
+
+For first-time setup, K10 keeps its animated avatar and displays:
+
+```text
+USB
+Set SDK Token first.
+```
+
+USB configuration stays available until a token is saved and K10 restarts. On an already configured device, select **USB mode** in the menu before connecting. Manual USB mode locks the configuration page until restart. Physical buttons are ignored during USB configuration; Wi-Fi, Muse and speech services continue in the background.
+
+Normal startup with a configured token creates no dedicated USB configuration task, request queue or driver buffers.
+
+### Buttons and status lights
+
+| Control | Action |
+|---|---|
+| Hold A, then release | Record and send a voice request during normal operation |
+| A while a pairing prompt is shown | Confirm pairing |
+| B | Open the menu or move to the next item |
+| A in the menu | Select the highlighted item |
+| RESET | Restart K10; leave USB mode when a token is configured |
+
+| RGB indication | Meaning |
+|---|---|
+| Breathing amber | Setup, offline or reconnecting |
+| Breathing blue | Pairing or connecting |
+| Green | Online and ready |
+| Blue | Recording |
+| Breathing purple | Thinking, or capturing a photo while online |
+| Breathing red | Error |
+
+## What you need
+
+- **DFRobot UNIHIKER K10:** ESP32-S3, 16 MB flash, 8 MB PSRAM.
+- A USB data cable and a computer running **Chrome or Edge**.
+- The Muse phone app with **Developer mode** available.
+- Your own **Muse Gadgets SDK Token**, from Account -> SDK tokens at [gadgets.muse.ai](https://gadgets.muse.ai).
+- Optional: a personal **Cartesia API Key** for spoken replies.
+
+Muse chat, image analysis and Cartesia speech require internet access. This firmware does not integrate the original K10 offline AI models, TF-card features, local image recognition or a wake-word assistant.
+
+## Quick start
+
+1. Download the public firmware package from [Releases](https://github.com/chunxiaoliu1/muse-unihiker-k10/releases).
+2. Follow the [flash and setup guide](esp32/tools/muse/K10_PUBLIC_RELEASE.md). The package contains four images with specific flash addresses; do not flash the application BIN alone at address 0x0.
+3. Boot K10 normally and open the included `usb-config/k10-usb-config.html`.
+4. Connect K10, enter your SDK Token and optional voice settings, then choose **Save all settings**.
+5. After K10 restarts, enable Developer mode in the Muse app, add the device and set up Wi-Fi.
+6. Hold **A**, speak, release, and read the reply. If Cartesia is configured, K10 also reads it aloud.
+
+After clearing all local user settings, remove the old K10 entry in the Muse app before pairing again. Reflashing alone preserves saved settings.
 
 ## Build from source
 
@@ -39,20 +152,30 @@ Use **ESP-IDF v6.0.1**. From `esp32/`, with IDF activated:
 ./tools/muse/k10-public.ps1 -Action build
 ```
 
-The public profile is runtime-token-only, so it needs no developer token at build time. The audited release package is written to `esp32/build-muse-k10-public/release/`. Windows helpers use the configured IDF environment, or the installation at `C:\Espressif\frameworks\esp-idf-v6.0.1`.
+The public profile accepts credentials at runtime and needs no developer token at build time. The audited firmware package and configuration page are written to `esp32/build-muse-k10-public/release/`.
 
-For a manual build, use `sdkconfig.defaults`, `devices/sdkconfig.muse`, `devices/sdkconfig.muse-dfrobot-unihiker-k10`, and `devices/sdkconfig.muse-k10-public` in that order, targeting `esp32s3`. See [ESP32 build instructions](esp32/README.md) and [the K10 board guide](esp32/devices/dfrobot-unihiker-k10.md).
+Windows helpers use the configured IDF environment, or the installation at `C:\Espressif\frameworks\esp-idf-v6.0.1`. For a manual build, target `esp32s3` and load `sdkconfig.defaults`, `devices/sdkconfig.muse`, `devices/sdkconfig.muse-dfrobot-unihiker-k10` and `devices/sdkconfig.muse-k10-public` in that order.
 
-## Code organization
+See [ESP32 build instructions](esp32/README.md) and [the K10 board guide](esp32/devices/dfrobot-unihiker-k10.md).
 
-[Feature map](esp32/components/muse/FEATURES.md) · [Sensors and rules](esp32/components/muse/sensors/README.md) · [Camera](esp32/components/muse/camera/README.md) · [Streaming speech](esp32/components/muse/tts/README.md) · [USB mode](esp32/components/muse/usb/README.md) · [Credential storage](esp32/main/credentials/README.md) · [USB protocol and page](esp32/tools/muse/usb-config/README.md)
+## Extend the project
 
-The upstream SDK's other board and Linux sources are retained. K10 extensions are selected by their board/feature options.
+| Area | Guide |
+|---|---|
+| Module boundaries and entry points | [Feature map](esp32/components/muse/FEATURES.md) |
+| Add sensors or adjust event rules | [Sensors and rules](esp32/components/muse/sensors/README.md) |
+| Capture parameters and camera driver | [Camera](esp32/components/muse/camera/README.md) |
+| Streaming speech and buffering | [Speech synthesis](esp32/components/muse/tts/README.md) |
+| USB resource lifecycle | [USB mode](esp32/components/muse/usb/README.md) |
+| NVS and credential handling | [Credential storage](esp32/main/credentials/README.md) |
+| Configuration page and serial protocol | [USB configuration](esp32/tools/muse/usb-config/README.md) |
 
-## Known limitations
+The upstream SDK's other board and Linux sources are retained. K10 extensions are selected by board and feature options. Original upstream documentation is preserved in [README_UPSTREAM.md](README_UPSTREAM.md).
 
-Camera images can be overexposed or color-shifted, especially near bright windows. Ambient light is an estimated lux value, acceleration is signed raw sensor data, and board heat can affect temperature readings. Network interruptions can pause streamed audio; service/key/quota errors leave text replies available. NVS is currently unencrypted; do not distribute a dump of a configured device.
+## Credentials, limitations and licensing
 
-## License and SDK terms
+No developer SDK Token, Cartesia key, Wi-Fi password or device NVS is included. The USB page does not upload, store in the browser, or read back credentials. NVS is currently unencrypted; do not distribute a dump of a configured device.
 
-See [LICENSE](LICENSE) for the Apache-2.0 license and retain bundled third-party notices. Muse SDK use is also subject to [Muse Gadgets SDK terms](https://gadgets.muse.ai/sdk-terms). Supplying individual tokens does not waive those terms. This repository contains no shared service credentials.
+Camera quality, estimated light levels, raw acceleration and streamed-audio pauses are described with their respective features above. This is a community firmware project, not an official DFRobot or Meta release.
+
+See [LICENSE](LICENSE) for Apache-2.0 and retain bundled third-party notices. Muse SDK use is also subject to [Muse Gadgets SDK terms](https://gadgets.muse.ai/sdk-terms); using individual tokens does not waive those terms.

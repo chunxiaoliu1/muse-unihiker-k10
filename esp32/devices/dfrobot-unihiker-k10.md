@@ -93,8 +93,9 @@ See [`camera/README.md`](../components/muse/camera/README.md) for wiring,
 resource limits and diagnostics. `python tools/muse/camera.py COM10 photo.jpg`
 saves a diagnostic image locally, using the same capture code.
 
-The added features are grouped into `components/muse/sensors/`, `camera/`
-and `tts/`; the computer-side speech service lives in `tools/muse/tts/`.
+The added features are grouped into `components/muse/sensors/`, `camera/`,
+`tts/` and `usb/`. Speech runs directly on K10; no computer-side TTS service
+is used. USB setup sources live in `tools/muse/usb-config/`.
 See the [feature map](../components/muse/FEATURES.md) for module boundaries
 and where to change parameters, event rules, drivers and speech providers.
 
