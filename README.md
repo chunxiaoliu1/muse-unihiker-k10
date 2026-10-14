@@ -2,7 +2,7 @@
 
 **Talk to Muse, see and hear its replies, ask about your surroundings, and let K10 report sensor events.**
 
-This firmware turns DFRobot UNIHIKER K10 into a Muse-connected device using its screen, microphone, speaker, camera, sensors and RGB LEDs. It is a community extension of [Meta's Muse Gadgets SDK](https://github.com/facebookincubator/muse-gadget-sdk).
+This firmware turns [DFRobot UNIHIKER K10](https://www.dfrobot.com/product-2904.html) into a Muse-connected device using its screen, microphone, speaker, camera, sensors and RGB LEDs. It is a community extension of [Meta's Muse Gadgets SDK](https://github.com/facebookincubator/muse-gadget-sdk).
 
 ## Features at a glance
 
@@ -125,7 +125,7 @@ Normal startup with a configured token creates no dedicated USB configuration ta
 
 ## What you need
 
-- **DFRobot UNIHIKER K10:** ESP32-S3, 16 MB flash, 8 MB PSRAM.
+- **[DFRobot UNIHIKER K10](https://www.dfrobot.com/product-2904.html)**: ESP32-S3, 16 MB flash, 8 MB PSRAM.
 - A USB data cable and a computer running **Chrome or Edge**.
 - The Muse phone app with **Developer mode** available.
 - Your own **Muse Gadgets SDK Token**, from Account -> SDK tokens at [gadgets.muse.ai](https://gadgets.muse.ai).
