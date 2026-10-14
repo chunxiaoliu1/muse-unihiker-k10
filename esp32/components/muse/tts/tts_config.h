@@ -1,0 +1,12 @@
+#pragma once
+
+/* 16 kHz mono PCM: 1 second prebuffer, bounded 8 second receive buffer. */
+#define MUSE_TTS_PREBUFFER_BYTES 32000
+#define MUSE_TTS_BUFFER_BYTES (256 * 1024)
+#define MUSE_TTS_MESSAGE_MAX_BYTES (512 * 1024)
+#define MUSE_TTS_IDLE_TIMEOUT_MS 30000
+#define MUSE_TTS_TOTAL_TIMEOUT_MS 150000
+#define MUSE_TTS_WORKER_STACK_BYTES 12288
+#define MUSE_TTS_REQUEST_QUEUE_LENGTH 1
+#define MUSE_TTS_MODEL "sonic-3.6"
+#define MUSE_TTS_API_VERSION "2026-08-14"

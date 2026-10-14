@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'none'; img-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>K10 · Muse USB Setup</title>
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="app.mjs"></script>
+</head>
+<body>
+  <main>
+    <span class="eyebrow">UNIHIKER K10 / MUSE GADGETS</span>
+    <h1>Connect your K10 to Muse</h1>
+    <p class="lead">Set up Muse and optional voice replies over USB.</p>
+    <section class="card" aria-labelledby="connection-heading">
+      <h2 id="connection-heading">1 · Connect your device</h2>
+      <p>Connect K10 with a USB data cable and open this page in Chrome or Edge on your computer.</p>
+      <p>For first-time setup, connect when the screen says <strong>Set SDK Token first.</strong> If your device is already set up, select <strong>USB mode</strong> in its menu first. Restart K10 to leave USB mode.</p>
+      <div class="actions"><button id="connect">Connect K10</button><button id="disconnect" class="secondary" disabled>Disconnect</button><button id="status" class="secondary" disabled>Refresh status</button><button id="restart" class="secondary" disabled>Restart device</button></div>
+      <p id="device" class="detail">Not connected</p>
+      <details><summary>Can't connect?</summary><p>Close other pages or serial tools connected to K10, then try again. If you just flashed the firmware, release BOOT and press RESET once.</p></details>
+    </section>
+    <form id="config-form" autocomplete="off" novalidate>
+      <section class="card" aria-labelledby="token-heading">
+        <h2 id="token-heading">2 · SDK Token</h2>
+        <p>Get your token from Account → SDK tokens at <a href="https://gadgets.muse.ai" target="_blank" rel="noopener noreferrer">gadgets.muse.ai</a>. It starts with <code>mgst_</code>.</p>
+        <label for="token">Your SDK Token</label>
+        <input id="token" name="sdk-token" type="password" autocomplete="off" spellcheck="false" autocapitalize="none" maxlength="48" placeholder="mgst_…" disabled aria-describedby="privacy">
+        <p id="privacy" class="detail">Your token is saved only on K10, never uploaded or stored in your browser. Leave this blank to keep an existing token.</p>
+        <p id="configuration" class="detail">Connect to check your settings.</p>
+      </section>
+      <section class="card" aria-labelledby="tts-heading">
+        <h2 id="tts-heading">3 · Voice replies (optional)</h2>
+        <p>Add a <a href="https://play.cartesia.ai/keys" target="_blank" rel="noopener noreferrer">Cartesia API Key</a> to have K10 read Muse's replies aloud. Skip this during first-time setup for text-only replies.</p>
+        <label for="tts-key">Cartesia API Key</label>
+        <input id="tts-key" type="password" autocomplete="off" spellcheck="false" autocapitalize="none" maxlength="255" placeholder="Enter your own API Key" disabled aria-describedby="tts-key-help">
+        <p id="tts-key-help" class="detail">Leave this blank to keep existing voice settings. Enter your key again to change the voice or language.</p>
+        <label for="tts-voice">Voice ID (you can keep the default voice)</label>
+        <input id="tts-voice" type="text" value="a0e99841-438c-4a64-b679-ae501e7d6091" maxlength="36" spellcheck="false" disabled required>
+        <label for="tts-language">Reply language</label>
+        <select id="tts-language"><option value="en" selected>English</option><option value="zh">Chinese</option><option value="es">Spanish</option><option value="fr">French</option><option value="de">German</option><option value="ja">Japanese</option><option value="ko">Korean</option><option value="pt">Portuguese</option><option value="it">Italian</option></select>
+        <p class="detail">Your key is saved only on K10. Voice replies need internet access, send reply text to Cartesia, and use your service credits.</p>
+        <div class="actions"><button id="tts-clear" type="button" class="secondary" disabled>Disable voice replies</button><button id="tts-test" type="button" class="secondary" disabled>Test voice</button></div>
+        <p class="detail">To test saved voice settings, restart K10, enter USB mode again, and reconnect to this page.</p>
+        <p id="tts-configuration" class="detail">Connect to check voice settings.</p>
+      </section>
+    </form>
+    <details class="card">
+      <summary>Clear settings or switch accounts</summary>
+      <p>Clearing only the SDK Token takes effect after a restart. Pairing, Wi-Fi, and voice settings are kept.</p>
+      <p>Before switching accounts or giving the device to someone else, clear all user settings and remove the old device in the Muse app. This also clears Wi-Fi and your Cartesia key, so you will need to set up K10 again.</p>
+      <div class="actions"><button id="clear" class="secondary" disabled>Clear SDK Token only</button><button id="factory" class="danger" disabled>Clear all user settings</button></div>
+    </details>
+    <section class="card" aria-label="Save settings">
+      <p>Save the SDK Token and voice settings entered above together. K10 restarts after everything is saved. For first-time setup, enable Developer mode in the Muse app, add the device, and set up Wi-Fi.</p>
+      <button id="save" type="submit" form="config-form" disabled>Save all settings</button>
+    </section>
+    <p id="notice" role="status" aria-live="polite">Ready to connect.</p>
+    <footer>After setup, you can close this page and disconnect USB. To change settings later, select USB mode in K10's menu.</footer>
+  </main>
+</body>
+</html>
